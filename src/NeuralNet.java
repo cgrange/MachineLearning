@@ -322,16 +322,15 @@ public class NeuralNet extends SupervisedLearner {
 	private void completeEpoch(Matrix features, Matrix labels) throws Exception{
 		for(int r = 0; r < features.rows(); r++){
 			double[] inputs = features.row(r);
-			double[] answers = labels.row(r); // shallow vs deep
-			double[] originalAnswers = new double[answers.length];
-			for(int i = 0; i < answers.length; i++){
-				originalAnswers[i] = answers[i];
+			double[] answers = new double[labels.row(r).length];
+			for(int i = 0; i < labels.row(r).length; i++){ // deep copy
+				answers[i] = labels.row(r)[i];
 			}
 			printWeights(inputs.length);
 			printInputsAndTargets(inputs, answers);
 			predict(inputs, answers); // answers should probably be changed here
 			printPredictedOutput(answers);
-			computeErrors(originalAnswers); // shallow vs deep hopefully this is the original value of answers not the updated answer
+			computeErrors(labels.row(r)); // shallow vs deep hopefully this is the original value of answers not the updated answer
 			printErrors();
 			updateAllWeights(inputs);
 		}
@@ -344,7 +343,7 @@ public class NeuralNet extends SupervisedLearner {
 		features.shuffle(rand, labels);
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
-		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols());
+		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); // TODO are these deep copies or shallow copies?
 		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
 		Matrix trainingSet = new Matrix(features, rowCount, 0, features.rows()-rowCount, features.cols());
 		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
@@ -355,7 +354,7 @@ public class NeuralNet extends SupervisedLearner {
 			trainingSet.shuffle(rand, tsLabels);
 			completeEpoch(trainingSet, tsLabels);
 			Matrix confusion = new Matrix();
-			accuracy = measureAccuracy(trainingSet, tsLabels, confusion);
+			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
 		}while(bssf.hasImprovedOverLastNEpochs(accuracy));
 		System.out.println("bssf accuracy: " + bssf.accuracy);
 		hiddenLayers = bssf.getHiddenLayers();
