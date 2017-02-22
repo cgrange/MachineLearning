@@ -338,8 +338,7 @@ public class NeuralNet extends SupervisedLearner {
 	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
-		//TODO split training set into validation set and training set 
-//		features.normalize();
+		// features.normalize(); test set is not normalized so it is unwise for me to normalize the training set
 		features.shuffle(rand, labels);
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
@@ -356,7 +355,6 @@ public class NeuralNet extends SupervisedLearner {
 			Matrix confusion = new Matrix();
 			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
 		}while(bssf.hasImprovedOverLastNEpochs(accuracy));
-		System.out.println("bssf accuracy: " + bssf.accuracy);
 		hiddenLayers = bssf.getHiddenLayers();
 		outputNeurons = bssf.getOutputNeurons();
 	}
