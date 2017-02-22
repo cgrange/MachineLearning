@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Random;
 
 
@@ -5,7 +6,10 @@ public class HiddenNeuron extends Neuron {
 
 	public HiddenNeuron(int numInputs, Random rand) {
 		super(numInputs, rand);
-		// TODO Auto-generated constructor stub
+	}
+
+	public HiddenNeuron(int numInputs, Random myRand, List<Weight> weights) {
+		super(numInputs, myRand, weights);
 	}
 
 	@Override

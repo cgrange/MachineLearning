@@ -16,6 +16,16 @@ public abstract class Neuron {
 		this.numInputs = numInputs;
 	}
 	
+	public Neuron(int numInputs, Random rand, List<Weight> weights){
+		this.rand = rand;
+		this.weights = new ArrayList<Weight>();
+		for(Weight w : weights){
+			this.weights.add(new Weight(w.getValue()));
+		}
+		this.numInputs = numInputs;
+		
+	}
+	
 	private double randomWeight(){
 		return (rand.nextDouble() - .5)*2;
 	}
@@ -98,6 +108,10 @@ public abstract class Neuron {
 	
 	public double getWeightFrom(int i){
 		return weights.get(i).getValue();
+	}
+	
+	public List<Weight> getWeights(){
+		return this.weights;
 	}
 	
 	public abstract double computeError(double target);

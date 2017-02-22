@@ -32,14 +32,14 @@ public class NeuralNet extends SupervisedLearner {
 				for(List<Neuron> layer : NeuralNet.this.hiddenLayers){
 					ArrayList<Neuron> deepLayer = new ArrayList<Neuron>();
 					for(Neuron n : layer){
-						Neuron deepN = new HiddenNeuron(n.numInputs, myRand);
+						Neuron deepN = new HiddenNeuron(n.numInputs, myRand, n.getWeights());
 						deepLayer.add(deepN);
 					}
 					this.hiddenLayers.add(deepLayer);
 				}
 				this.outputNeurons = new ArrayList<Neuron>();
 				for(Neuron n : NeuralNet.this.outputNeurons){
-					Neuron deepN = new OutputNeuron(n.numInputs, new Random());
+					Neuron deepN = new OutputNeuron(n.numInputs, new Random(), n.getWeights());
 					this.outputNeurons.add(deepN);
 				}
 				epochsWithoutImprovement = 0;
@@ -346,8 +346,9 @@ public class NeuralNet extends SupervisedLearner {
 			trainingSet.shuffle(rand, tsLabels);
 			completeEpoch(trainingSet, tsLabels);
 			Matrix confusion = new Matrix();
-			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
+			accuracy = measureAccuracy(trainingSet, tsLabels, confusion);
 		}while(bssf.hasImprovedOverLastNEpochs(accuracy));
+		System.out.println("bssf accuracy: " + bssf.accuracy);
 		hiddenLayers = bssf.getHiddenLayers();
 		outputNeurons = bssf.getOutputNeurons();
 	}
