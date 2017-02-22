@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -119,6 +120,7 @@ public class NeuralNet extends SupervisedLearner {
 				System.out.println("for neural net the number of hidden layers must be > 0");
 			}
 		}while(!canMoveOn);
+		System.out.println("the dataset has " + numInputs + " features");
 		for(int i = 0; i < numHiddenLayers; i++){
 			hiddenLayers.add(new ArrayList<Neuron>());
 			System.out.println("How many hidden neurons would you like in layer " + i + ": ");
@@ -320,6 +322,7 @@ public class NeuralNet extends SupervisedLearner {
 	}
 	
 	private void completeEpoch(Matrix features, Matrix labels) throws Exception{
+		features.shuffle(rand, labels);
 		for(int r = 0; r < features.rows(); r++){
 			double[] inputs = features.row(r);
 			double[] answers = new double[labels.row(r).length];
@@ -336,10 +339,43 @@ public class NeuralNet extends SupervisedLearner {
 		}
 	}
 	
+	/*
+	 * Create one graph with 
+	 * 		the MSE (mean squared error) on the training set, 
+	 * 		the MSE on the VS, 
+	 * 		and the classification accuracy (% classified correctly) of the VS on the y-axis, 
+	 * 		and number of epochs on the x-axis. 
+	 * 		(Note two scales on the y-axis). 
+	 * The results for the different measurables should be shown with a different color, line type, etc. Typical backpropagation accuracies for the 
+	 * Iris data set are 85-95%.  (Showing this all in one graph is best, but if you need to use two graphs, that is OK).
+	*/
+	
+	private void outputMSEToCSV(PrintWriter mseFile, int epochs, double mseTraining, double mseValidation){
+		mseFile.print(epochs);
+		mseFile.print(", ");
+		mseFile.print(mseTraining);
+		mseFile.print(", ");
+		mseFile.print(mseValidation);
+		mseFile.print("\n");
+	}
+	
+	private void outputAccuracyToCSV(PrintWriter accuracyFile, int epochs, double accuracy){
+		accuracyFile.print(epochs);
+		accuracyFile.print(", ");
+		accuracyFile.print(accuracy);
+		accuracyFile.print("\n");
+	}
+
+	private double mse(){
+		//TODO
+		return 0.0;
+	}
+	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
 		// features.normalize(); test set is not normalized so it is unwise for me to normalize the training set
-		features.shuffle(rand, labels);
+		PrintWriter mseFile = new PrintWriter("MSE_vs_epochs.csv");
+		PrintWriter accuracyFile = new PrintWriter("classificationAccuracy.csv");		  
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
 		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); // TODO are these deep copies or shallow copies?
@@ -349,11 +385,19 @@ public class NeuralNet extends SupervisedLearner {
 		initializeNetwork(trainingSet.cols());
 		double accuracy;
 		BestSolutionSoFar bssf = new BestSolutionSoFar();
+		int epochs =  0;
 		do{
-			trainingSet.shuffle(rand, tsLabels);
 			completeEpoch(trainingSet, tsLabels);
+			epochs++;
+			
+			double mseTraining = mse();
+			double mseValidation = mse();
+			outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
+			
 			Matrix confusion = new Matrix();
 			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
+			outputAccuracyToCSV(accuracyFile, epochs, accuracy);
+			
 		}while(bssf.hasImprovedOverLastNEpochs(accuracy));
 		hiddenLayers = bssf.getHiddenLayers();
 		outputNeurons = bssf.getOutputNeurons();
@@ -401,7 +445,5 @@ public class NeuralNet extends SupervisedLearner {
 		else{
 			labels[0] = answers[0];
 		}
-		
 	}
-	
 }
