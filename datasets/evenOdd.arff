@@ -1,0 +1,27 @@
+% 1. Title: Even Odd File
+% 
+% 2. Number of Instances: 8 (4 in both classes)
+% 
+% 3. Number of Attributes: 1 continuous, predictive attribute and the class
+% 
+% 4. Attribute Information:
+%    1. a number
+%    2. class: 
+%       -- odd
+%       -- even
+
+
+@RELATION evenVSodd
+
+@ATTRIBUTE integer 	Continuous
+@ATTRIBUTE class 	{odd,even}
+
+@DATA
+1,odd
+2,even
+3,odd
+4,even
+5,odd
+6,even
+7,odd
+8,even
