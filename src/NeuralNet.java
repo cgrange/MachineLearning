@@ -339,7 +339,7 @@ public class NeuralNet extends SupervisedLearner {
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
 		//TODO split training set into validation set and training set 
-		features.normalize();
+//		features.normalize();
 		features.shuffle(rand, labels);
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
