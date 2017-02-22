@@ -203,7 +203,16 @@ public class NeuralNet extends SupervisedLearner {
 	
 	private void computeErrors(double[] targets){ // we compute all errors before we change any weights right?
 		for(int n = 0; n < outputNeurons.size(); n++){
-			outputNeurons.get(n).computeError(targets[0]);
+			// this will only  work for the iris dataset
+			double target;
+			if(n == targets[0]){
+				target = 1.0;
+			}
+			else{
+				target = 0;
+			}
+			outputNeurons.get(n).computeError(target);
+			//outputNeurons.get(n).computeError(targets[0]);
 		}
 		for(int i = hiddenLayers.size()-1; i >= 0; i--){ // make sure error is being propagated backwards
 			for(Neuron n : hiddenLayers.get(i)){
