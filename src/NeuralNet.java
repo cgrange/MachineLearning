@@ -203,7 +203,15 @@ public class NeuralNet extends SupervisedLearner {
 		}
 	}
 	
-	private void computeErrors(double[] targets){ // we compute all errors before we change any weights right?
+	/**
+	 * computes and stores the error of each neuron in that neuron
+	 * @param targets
+	 * @return mean squared error for that prediction
+	 */
+	private double computeErrors(double[] targets){ // we compute all errors before we change any weights right?
+		double mse = 0; // mean squared error
+		double totalSquaredError = 0;
+		int numberOfErrors = 0;
 		for(int n = 0; n < outputNeurons.size(); n++){
 			// this will only  work for the iris dataset
 			double target;
@@ -213,14 +221,20 @@ public class NeuralNet extends SupervisedLearner {
 			else{
 				target = 0;
 			}
-			outputNeurons.get(n).computeError(target);
+			double error = outputNeurons.get(n).computeError(target);
+			numberOfErrors++;
+			totalSquaredError += Math.pow(error, 2);
 			//outputNeurons.get(n).computeError(targets[0]);
 		}
 		for(int i = hiddenLayers.size()-1; i >= 0; i--){ // make sure error is being propagated backwards
 			for(Neuron n : hiddenLayers.get(i)){
-				n.computeError(0.0);// the parameter is useless for hidden nodes	
+				double error = n.computeError(0.0);// the parameter is useless for hidden nodes
+				numberOfErrors++;
+				totalSquaredError += Math.pow(error, 2);
 			}
 		}
+		mse = totalSquaredError / numberOfErrors;
+		return mse;
 	}
 
 	public double getLearningRate(){
@@ -321,8 +335,16 @@ public class NeuralNet extends SupervisedLearner {
 		}
 	}
 	
-	private void completeEpoch(Matrix features, Matrix labels) throws Exception{
+	/**
+	 * does one epoch of training
+	 * @param features
+	 * @param labels
+	 * @return double mean squared error for that epoch
+	 * @throws Exception
+	 */
+	private double completeEpoch(Matrix features, Matrix labels) throws Exception{
 		features.shuffle(rand, labels);
+		double sumMSEs = 0;
 		for(int r = 0; r < features.rows(); r++){
 			double[] inputs = features.row(r);
 			double[] answers = new double[labels.row(r).length];
@@ -333,10 +355,11 @@ public class NeuralNet extends SupervisedLearner {
 			printInputsAndTargets(inputs, answers);
 			predict(inputs, answers); // answers should probably be changed here
 			printPredictedOutput(answers);
-			computeErrors(labels.row(r)); // shallow vs deep hopefully this is the original value of answers not the updated answer
+			sumMSEs += computeErrors(labels.row(r)); // shallow vs deep hopefully this is the original value of answers not the updated answer
 			printErrors();
 			updateAllWeights(inputs);
 		}
+		return sumMSEs / features.rows();
 	}
 	
 	/*
@@ -378,7 +401,7 @@ public class NeuralNet extends SupervisedLearner {
 		PrintWriter accuracyFile = new PrintWriter("classificationAccuracy.csv");		  
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
-		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); // TODO are these deep copies or shallow copies?
+		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); // TODO deep or shallow copies?
 		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
 		Matrix trainingSet = new Matrix(features, rowCount, 0, features.rows()-rowCount, features.cols());
 		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
@@ -387,10 +410,9 @@ public class NeuralNet extends SupervisedLearner {
 		BestSolutionSoFar bssf = new BestSolutionSoFar();
 		int epochs =  0;
 		do{
-			completeEpoch(trainingSet, tsLabels);
+			double mseTraining = completeEpoch(trainingSet, tsLabels);
 			epochs++;
 			
-			double mseTraining = mse();
 			double mseValidation = mse();
 			outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
 			
