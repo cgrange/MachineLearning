@@ -362,6 +362,32 @@ public class NeuralNet extends SupervisedLearner {
 		return sumMSEs / features.rows();
 	}
 	
+	/**
+	 * just like complete epoch except it just computes the error fro that epoch and does not update the weights
+	 * @param features
+	 * @param labels
+	 * @return double the mean squared error for that epoch
+	 * @throws Exception
+	 */
+	private double errorEpoch(Matrix features, Matrix labels) throws Exception{
+		features.shuffle(rand, labels);
+		double sumMSEs = 0;
+		for(int r = 0; r < features.rows(); r++){
+			double[] inputs = features.row(r);
+			double[] answers = new double[labels.row(r).length];
+			for(int i = 0; i < labels.row(r).length; i++){ // deep copy
+				answers[i] = labels.row(r)[i];
+			}
+			printWeights(inputs.length);
+			printInputsAndTargets(inputs, answers);
+			predict(inputs, answers); // answers should probably be changed here
+			printPredictedOutput(answers);
+			sumMSEs += computeErrors(labels.row(r)); // shallow vs deep hopefully this is the original value of answers not the updated answer
+			printErrors();
+		}
+		return sumMSEs / features.rows();
+	}
+	
 	/*
 	 * Create one graph with 
 	 * 		the MSE (mean squared error) on the training set, 
@@ -388,20 +414,15 @@ public class NeuralNet extends SupervisedLearner {
 		accuracyFile.print(accuracy);
 		accuracyFile.print("\n");
 	}
-
-	private double mse(){
-		//TODO
-		return 0.0;
-	}
 	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
 		// features.normalize(); test set is not normalized so it is unwise for me to normalize the training set
-		PrintWriter mseFile = new PrintWriter("MSE_vs_epochs.csv");
-		PrintWriter accuracyFile = new PrintWriter("classificationAccuracy.csv");		  
+		PrintWriter mseFile = new PrintWriter("xl/MSE_vs_epochs.csv");
+		PrintWriter accuracyFile = new PrintWriter("xl/classificationAccuracy.csv");		  
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
-		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); // TODO deep or shallow copies?
+		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); 
 		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
 		Matrix trainingSet = new Matrix(features, rowCount, 0, features.rows()-rowCount, features.cols());
 		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
@@ -413,7 +434,7 @@ public class NeuralNet extends SupervisedLearner {
 			double mseTraining = completeEpoch(trainingSet, tsLabels);
 			epochs++;
 			
-			double mseValidation = mse();
+			double mseValidation = errorEpoch(validationSet, vsLabels);
 			outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
 			
 			Matrix confusion = new Matrix();
