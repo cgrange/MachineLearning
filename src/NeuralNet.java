@@ -17,16 +17,19 @@ public class NeuralNet extends SupervisedLearner {
 	private class BestSolutionSoFar{
 		private List<ArrayList<Neuron>> hiddenLayers;
 		private List<Neuron> outputNeurons;
-		private double accuracy;
+		private double mseValidation, mseTraining, accuracy;
 		private int epochsWithoutImprovement;
 		
 		public BestSolutionSoFar(){
-			accuracy = 0;
+			mseValidation = 1;
+			mseTraining = 1;
 			epochsWithoutImprovement = 0;
 		}
 
-		public boolean hasImprovedOverLastNEpochs(double accuracy){
-			if(accuracy > this.accuracy){
+		public boolean hasImprovedOverLastNEpochs(double mseValidation, double mseTraining, double accuracy){
+			if(mseValidation < this.mseValidation){
+				this.mseValidation = mseValidation;
+				this.mseTraining = mseTraining;
 				this.accuracy = accuracy;
 				//deep copy
 				this.hiddenLayers = new ArrayList<ArrayList<Neuron>>();
@@ -54,6 +57,18 @@ public class NeuralNet extends SupervisedLearner {
 			else{
 				return true;
 			}
+		}
+		
+		public double getMseValidation(){
+			return mseValidation;
+		}
+		
+		public double getMseTraining(){
+			return mseTraining;
+		}
+		
+		public double getAccuracy(){
+			return accuracy;
 		}
 		
 		public List<ArrayList<Neuron>> getHiddenLayers(){
@@ -95,7 +110,8 @@ public class NeuralNet extends SupervisedLearner {
 			if(input.equalsIgnoreCase("yes")){
 				cantType = false;
 				useMomentum = true;
-				momentum = .9;
+				System.out.println("what would you like your momentum term to be?");
+				momentum = reader.nextDouble();
 			}
 			else if(input.equalsIgnoreCase("no")){
 				cantType = false;
@@ -422,28 +438,54 @@ public class NeuralNet extends SupervisedLearner {
 		PrintWriter accuracyFile = new PrintWriter("xl/classificationAccuracy.csv");		  
 		double percent = .25;
 		int rowCount = (int)(features.rows() * percent);
-		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()); 
+		Matrix validationSet = new Matrix(features, 0, 2, rowCount, features.cols()-2); //trying to ignore train vs test, and the identity of the reader so that it will generalize better
 		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
-		Matrix trainingSet = new Matrix(features, rowCount, 0, features.rows()-rowCount, features.cols());
+		Matrix trainingSet = new Matrix(features, rowCount, 2, features.rows()-rowCount, features.cols()-2);
 		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
 		initializeNetwork(trainingSet.cols());
-		double accuracy;
+		double mseValidation, mseTraining, accuracy;
 		BestSolutionSoFar bssf = new BestSolutionSoFar();
 		int epochs =  0;
 		do{
-			double mseTraining = completeEpoch(trainingSet, tsLabels);
+			mseTraining = completeEpoch(trainingSet, tsLabels);
 			epochs++;
 			
-			double mseValidation = errorEpoch(validationSet, vsLabels);
-			outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
+			mseValidation = errorEpoch(validationSet, vsLabels);
+			//outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
 			
 			Matrix confusion = new Matrix();
 			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
-			outputAccuracyToCSV(accuracyFile, epochs, accuracy);
+			//outputAccuracyToCSV(accuracyFile, epochs, accuracy);
 			
-		}while(bssf.hasImprovedOverLastNEpochs(accuracy));
+		}while(bssf.hasImprovedOverLastNEpochs(mseValidation, mseTraining, accuracy));
+		accuracyFile.close();
+		mseFile.close();
 		hiddenLayers = bssf.getHiddenLayers();
 		outputNeurons = bssf.getOutputNeurons();
+		System.out.println("epochs: " + epochs);
+		System.out.println("mseTrS: " + bssf.getMseTraining());
+		System.out.println("mseVS: " + bssf.getMseValidation());
+		System.out.println("VS accuracy: " + bssf.getAccuracy());
+	}
+	
+	@Override
+	public void mseTest(Matrix testFeatures, Matrix testLabels) {
+		double mseTest = -1;
+		double testAccuracy = -1;
+		Matrix streamlinedTestFeatures = new Matrix(testFeatures, 0, 2, testFeatures.rows(), testFeatures.cols()-2);
+		try {
+			mseTest = errorEpoch(streamlinedTestFeatures, testLabels);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Matrix confusion = new Matrix();
+		try {
+			testAccuracy = measureAccuracy(streamlinedTestFeatures, testLabels, confusion);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("mseTeS: " + mseTest);
+		System.out.println("test accuracy: " + testAccuracy);
 	}
 	
 	private double[] getOutputs(List<Neuron> layer, double[] inputs){

@@ -210,4 +210,10 @@ public class Perceptron extends SupervisedLearner {
 		}
 	}
 
+	@Override
+	public void mseTest(Matrix features, Matrix labels) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

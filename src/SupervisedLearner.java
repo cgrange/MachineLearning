@@ -75,5 +75,7 @@ public abstract class SupervisedLearner {
 			return (double)correctCount / features.rows();
 		}
 	}
+	
+	public abstract void mseTest(Matrix features, Matrix labels);
 
 }

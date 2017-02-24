@@ -124,6 +124,7 @@ public class MLSystemManager {
 			Matrix testLabels = new Matrix(data, trainSize, data.cols() - 1, data.rows() - trainSize, 1);
 			double startTime = System.currentTimeMillis();
 			learner.train(trainFeatures, trainLabels);
+			learner.mseTest(testFeatures, testLabels);
 			double elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.println("Time to train (in seconds): " + elapsedTime / 1000.0);
 			double trainAccuracy = learner.measureAccuracy(trainFeatures, trainLabels, null);
