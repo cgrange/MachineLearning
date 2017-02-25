@@ -10,13 +10,10 @@ public class Weight {
 	}
 	
 	public void delta(double deltaW){
-		if(NNFacade.testing()){
-			System.out.println("deltaW: " + deltaW);
+		if(NeuralNet.getInstance(new Random()).useMomentum()){
+			deltaW += lastChange*NeuralNet.getInstance(new Random()).getMomentum();
 		}
 		value += deltaW;
-		if(NeuralNet.getInstance(new Random()).useMomentum()){
-			value += lastChange*NeuralNet.getInstance(new Random()).getMomentum();
-		}
 		lastChange = deltaW;
 	}
 	

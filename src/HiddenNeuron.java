@@ -24,5 +24,68 @@ public class HiddenNeuron extends Neuron {
 		error = errorJ;
 		return error;
 	}
+	
+	public void printWeights(){
+		String startString0 = "nonesense";
+		String startString1 = "nonesense";
+		String startString2 = "nonesense";
+		if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 0){
+			startString0 = "w_4=";
+			startString1 = "w_5=";
+			startString2 = "w_6=";
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 1){
+			startString0 = "\nw_7=";
+			startString1 = "w_8=";
+			startString2 = "w_9=";
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 2){
+			startString0 = "w_10=";
+			startString1 = "w_11=";
+			startString2 = "w_12=";
+		}
+		else{
+			NNFacade.getHiddenLayers().get(999999999);
+		}
+		System.out.print(startString0 + weights.get(2).getValue() + ", ");
+		System.out.print(startString1 + weights.get(0).getValue() + ", ");
+		System.out.print(startString2 + weights.get(1).getValue() + ", ");
+	}
+
+	@Override
+	public void printOutput() {
+		if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 0){
+			System.out.print("o_1=" + output);
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 1){
+			System.out.print("o_2=" + output);
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 2){
+			System.out.print("o_3=" + output);
+		}
+		else{
+			NNFacade.getHiddenLayers().get(9999999);
+			// you shouldn't be printing unless its for that one test case
+		}
+	}
+
+	@Override
+	public void printError() {
+		String startString = "nonesense";
+		if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 0){
+			startString = "e_1=";
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 1){
+			startString = "e_2=";
+		}
+		else if(NNFacade.getHiddenLayers().get(0).indexOf(this) == 2){
+			startString = "e_3=";
+		}
+		else{
+			NNFacade.getHiddenLayers().get(9999999);
+			// you shouldn't be printing unless its for that one test case
+		}
+		System.out.print(startString + error + ", ");
+	}
 
 }

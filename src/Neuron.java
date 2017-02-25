@@ -5,7 +5,7 @@ import java.util.Random;
 
 public abstract class Neuron {
 	
-	private List<Weight> weights;
+	protected List<Weight> weights;
 	protected double output, error;
 	Random rand;
 	int numInputs;
@@ -31,14 +31,49 @@ public abstract class Neuron {
 	}
 	
 	private void initTestWeights(){
+		Weight w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12;
+		w0 = new Weight(0.02);
+		w1 = new Weight(-0.01);
+		w2 = new Weight(0.03);
+		w3 = new Weight(0.02);
+		w4 = new Weight(-0.01);
+		w5 = new Weight(-0.03);
+		w6 = new Weight(0.03);
+		w7 = new Weight(0.01);
+		w8 = new Weight(0.04);
+		w9 = new Weight(-0.02);
+		w10 = new Weight(-0.02);
+		w11 = new Weight(0.03);
+		w12 = new Weight(0.02);
 		int layer = NNFacade.layerOfHiddenNeuron(this);
-		Weight w1, w2, bias;
-		w1 = new Weight(1.0);
-		w2 = new Weight(1.0);
-		bias = new Weight(1.0);
-		weights.add(w1);
-		weights.add(w2);
-		weights.add(bias);
+		if(layer != -1){
+			int idx = NNFacade.getHiddenLayers().get(layer).indexOf(this);
+			if(idx == 0){
+				weights.add(w5);
+				weights.add(w6);
+				weights.add(w4);
+			}
+			else if(idx == 1){
+				weights.add(w8);
+				weights.add(w9);
+				weights.add(w7);
+			}
+			else if(idx == 2){
+				weights.add(w11);
+				weights.add(w12);
+				weights.add(w10);
+			}
+			else{
+				System.out.println("You're doing it wrong");
+				System.exit(0);
+			}
+		}
+		else{ // it's the output node
+			weights.add(w1);
+			weights.add(w2);
+			weights.add(w3);
+			weights.add(w0);
+		}
 	}
 	
 	public void initializeIncomingWeights(){
@@ -115,4 +150,8 @@ public abstract class Neuron {
 	}
 	
 	public abstract double computeError(double target);
+	
+	public abstract void printWeights();
+	public abstract void printOutput();
+	public abstract void printError();
 }
