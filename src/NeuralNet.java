@@ -13,6 +13,7 @@ public class NeuralNet extends SupervisedLearner {
 	private int stoppingCriteria;
 	Random rand, myRand;
 	boolean testing;
+	boolean classificationProblem;
 	
 	private class BestSolutionSoFar{
 		private List<ArrayList<Neuron>> hiddenLayers;
@@ -27,7 +28,7 @@ public class NeuralNet extends SupervisedLearner {
 		}
 
 		public boolean hasImprovedOverLastNEpochs(double mseValidation, double mseTraining, double accuracy){
-			if(mseValidation < this.mseValidation){
+			if(accuracy > this.accuracy){
 				this.mseValidation = mseValidation;
 				this.mseTraining = mseTraining;
 				this.accuracy = accuracy;
@@ -98,29 +99,31 @@ public class NeuralNet extends SupervisedLearner {
 		this.myRand = new Random();
 		this.hiddenLayers = new ArrayList<ArrayList<Neuron>>();
 		this.outputNeurons = new ArrayList<Neuron>();
+		testing = false;
 	}
 	
 	private void initializeMomentum(Scanner reader){
-		momentum = 0;
-		System.out.println("Would you like to use Momentum: [yes/no]");
-		boolean cantType = true;
-		reader.nextLine();
-		do{
-			String input = reader.nextLine();
-			if(input.equalsIgnoreCase("yes")){
-				cantType = false;
-				useMomentum = true;
-				System.out.println("what would you like your momentum term to be?");
-				momentum = reader.nextDouble();
-			}
-			else if(input.equalsIgnoreCase("no")){
-				cantType = false;
-				useMomentum = false;
-			}
-			else{
-				System.out.println("try again");
-			}
-		}while(cantType);
+		momentum = .9;
+//		momentum = 0;
+//		System.out.println("Would you like to use Momentum: [yes/no]");
+//		boolean cantType = true;
+//		reader.nextLine();
+//		do{
+//			String input = reader.nextLine();
+//			if(input.equalsIgnoreCase("yes")){
+//				cantType = false;
+//				useMomentum = true;
+//				System.out.println("what would you like your momentum term to be?");
+//				momentum = reader.nextDouble();
+//			}
+//			else if(input.equalsIgnoreCase("no")){
+//				cantType = false;
+//				useMomentum = false;
+//			}
+//			else{
+//				System.out.println("try again");
+//			}
+//		}while(cantType);
 	}
 	
 	private void initializeHiddenLayers(Scanner reader, int numInputs){
@@ -194,7 +197,7 @@ public class NeuralNet extends SupervisedLearner {
 	private void initializeNetwork(int numInputs){
 		Scanner reader = new Scanner(System.in);  // Reading from System.in
 		
-		checkTesting(reader);
+		//checkTesting(reader);
 		
 		if(!testing){
 			System.out.println("What would you like the Learning Rate to be: ");
@@ -202,8 +205,9 @@ public class NeuralNet extends SupervisedLearner {
 			
 			initializeMomentum(reader);
 			
-			System.out.println("How many epochs without improving before the algorithm should stop? ");
-			stoppingCriteria = reader.nextInt();
+//			System.out.println("How many epochs without improving before the algorithm should stop? ");
+//			stoppingCriteria = reader.nextInt();
+			stoppingCriteria = 10;
 		}	
 		initializeHiddenLayers(reader, numInputs);
 		
@@ -232,20 +236,24 @@ public class NeuralNet extends SupervisedLearner {
 		double mse = 0; // mean squared error
 		double totalSquaredError = 0;
 		int numberOfErrors = 0;
-		for(int n = 0; n < outputNeurons.size(); n++){
-			// this will only  work for nominal datasets
-//			double target;
-//			if(n == targets[0]){
-//				target = 1.0;
-//			}
-//			else{
-//				target = 0;
-//			}
-			double error = outputNeurons.get(n).computeError(targets[0]);
-			numberOfErrors++;
-			totalSquaredError += Math.pow(error, 2);
-			//outputNeurons.get(n).computeError(targets[0]);
+		if(classificationProblem){
+			for(int n = 0; n < outputNeurons.size(); n++){
+				double target;
+				if(n == targets[0]) target = 1.0;
+				else target = 0;
+				double error = outputNeurons.get(n).computeError(target);
+				numberOfErrors++;
+				totalSquaredError += Math.pow(error, 2);
+			}
 		}
+		else{
+			for(int n = 0; n < outputNeurons.size(); n++){
+				double error = outputNeurons.get(n).computeError(targets[0]);
+				numberOfErrors++;
+				totalSquaredError += Math.pow(error, 2);
+			}
+		}
+		
 		for(int i = hiddenLayers.size()-1; i >= 0; i--){ // make sure error is being propagated backwards
 			for(Neuron n : hiddenLayers.get(i)){
 				double error = n.computeError(0.0);// the parameter is useless for hidden nodes
@@ -270,10 +278,10 @@ public class NeuralNet extends SupervisedLearner {
 	}
 	
 	private void printWeights(){
-		System.out.println("descending gradient...");
 		if(!testing){
 			return;
 		}
+		System.out.println("descending gradient...");
 		outputNeurons.get(0).printWeights();
 		for(Neuron n : hiddenLayers.get(0)){
 			n.printWeights();
@@ -281,10 +289,10 @@ public class NeuralNet extends SupervisedLearner {
 		System.out.println();
 	}
 	private void printOutputs(){
-		System.out.println("forward propagating...");
 		if(!testing){
 			return;
 		}
+		System.out.println("forward propagating...");
 		outputNeurons.get(0).printOutput();
 		hiddenLayers.get(0).get(0).printOutput();
 		hiddenLayers.get(0).get(1).printOutput();
@@ -292,10 +300,10 @@ public class NeuralNet extends SupervisedLearner {
 		System.out.println();
 	}
 	private void printErrors(){
-		System.out.println("Back Propagating...");
 		if(!testing){
 			return;
 		}
+		System.out.println("Back Propagating...");
 		outputNeurons.get(0).printError();
 		hiddenLayers.get(0).get(0).printError();
 		hiddenLayers.get(0).get(1).printError();
@@ -303,6 +311,9 @@ public class NeuralNet extends SupervisedLearner {
 		System.out.println();
 	}
 	private void printPattern(double[] inputs, double[] answers){
+		if(!testing){
+			return;
+		}
 		System.out.println("Pattern: {" + inputs[0] + ", " + inputs[1] + ", " + answers[0] + "}");
 	}
 	
@@ -386,37 +397,42 @@ public class NeuralNet extends SupervisedLearner {
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
 		// features.normalize(); test set is not normalized so it is unwise for me to normalize the training set
+		if(labels.valueCount(0) == 0) classificationProblem = false;
+		else classificationProblem = true;
 		PrintWriter mseFile = new PrintWriter("xl/MSE_vs_epochs.csv");
 		PrintWriter accuracyFile = new PrintWriter("xl/classificationAccuracy.csv");		  
 		double percent = .25;
-//		int rowCount = (int)(features.rows() * percent);
-//		Matrix validationSet = new Matrix(features, 0, 0, rowCount, features.cols()-0); //trying to ignore train vs test, and the identity of the reader so that it will generalize better
-//		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
-//		Matrix trainingSet = new Matrix(features, rowCount, 0, features.rows()-rowCount, features.cols()-0);
-//		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
-		initializeNetwork(features.cols());
+		int rowCount = (int)(features.rows() * percent);
+		Matrix validationSet = new Matrix(features, 0, 2, rowCount, features.cols()-2); //trying to ignore train vs test, and the identity of the reader so that it will generalize better
+		Matrix vsLabels = new Matrix(labels, 0, 0, rowCount, labels.cols());
+		Matrix trainingSet = new Matrix(features, rowCount, 2, features.rows()-rowCount, features.cols()-2);
+		Matrix tsLabels = new Matrix(labels, rowCount, 0, features.rows()-rowCount, labels.cols());
+		initializeNetwork(trainingSet.cols());
 		double mseValidation, mseTraining, accuracy;
 		BestSolutionSoFar bssf = new BestSolutionSoFar();
 		int epochs =  0;
 		do{
-			System.out.println("---Epoch " + (epochs+1) + "---");
-			mseTraining = completeEpoch(features, labels);
+			//System.out.println("---Epoch " + (epochs+1) + "---");
+			mseTraining = completeEpoch(trainingSet, tsLabels);
 			epochs++;
 			
-			//mseValidation = mse(validationSet, vsLabels);
-			//outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
+			mseValidation = mse(validationSet, vsLabels);
+			outputMSEToCSV(mseFile, epochs, mseTraining, mseValidation);
 			
-			//Matrix confusion = new Matrix();
-			//accuracy = measureAccuracy(validationSet, vsLabels, confusion);
-			//outputAccuracyToCSV(accuracyFile, epochs, accuracy);
+			Matrix confusion = new Matrix();
+			accuracy = measureAccuracy(validationSet, vsLabels, confusion);
+			if(epochs%50 == 0){
+				System.out.println("validation set accuracy: " + accuracy);
+			}
+			outputAccuracyToCSV(accuracyFile, epochs, accuracy);
 			if(testing && epochs == 3){
 				break;
 			}
-		}while(true /*bssf.hasImprovedOverLastNEpochs(mseValidation, mseTraining, accuracy)*/);
+		}while(bssf.hasImprovedOverLastNEpochs(mseValidation, mseTraining, accuracy));
 		accuracyFile.close();
 		mseFile.close();
-		//hiddenLayers = bssf.getHiddenLayers();
-		//outputNeurons = bssf.getOutputNeurons();
+		hiddenLayers = bssf.getHiddenLayers();
+		outputNeurons = bssf.getOutputNeurons();
 		System.out.println("epochs: " + epochs);
 		System.out.println("mseTrS: " + bssf.getMseTraining());
 		System.out.println("mseVS: " + bssf.getMseValidation());
@@ -425,22 +441,24 @@ public class NeuralNet extends SupervisedLearner {
 	
 	@Override
 	public void mseTest(Matrix testFeatures, Matrix testLabels) {
-//		double mseTest = -1;
-//		double testAccuracy = -1;
-//		Matrix streamlinedTestFeatures = new Matrix(testFeatures, 0, 2, testFeatures.rows(), testFeatures.cols()-2);
-//		try {
-//			mseTest = mse(streamlinedTestFeatures, testLabels);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		Matrix confusion = new Matrix();
-//		try {
-//			testAccuracy = measureAccuracy(streamlinedTestFeatures, testLabels, confusion);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		System.out.println("mseTeS: " + mseTest);
-//		System.out.println("test accuracy: " + testAccuracy);
+		double mseTest = -1;
+		double testAccuracy = -1;
+		Matrix streamlinedTestFeatures = new Matrix(testFeatures, 0, 2, testFeatures.rows(), testFeatures.cols()-2);
+		try {
+			mseTest = mse(streamlinedTestFeatures, testLabels);
+		} catch (Exception e) {
+			NNFacade.getHiddenLayers().get(-1);
+			e.printStackTrace();
+		}
+		Matrix confusion = new Matrix();
+		try {
+			testAccuracy = measureAccuracy(streamlinedTestFeatures, testLabels, confusion);
+		} catch (Exception e) {
+			e.printStackTrace();
+			NNFacade.getHiddenLayers().get(-1);
+		}
+		System.out.println("mseTeS: " + mseTest);
+		System.out.println("test accuracy: " + testAccuracy);
 	}
 	
 	private double[] getOutputs(List<Neuron> layer, double[] inputs){

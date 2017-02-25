@@ -45,7 +45,7 @@ public class HiddenNeuron extends Neuron {
 			startString2 = "w_12=";
 		}
 		else{
-			NNFacade.getHiddenLayers().get(999999999);
+			NNFacade.getHiddenLayers().get(-1);
 		}
 		System.out.print(startString0 + weights.get(2).getValue() + ", ");
 		System.out.print(startString1 + weights.get(0).getValue() + ", ");
