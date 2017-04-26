@@ -47,7 +47,14 @@ public class Matrix {
 		}
 	}
 
-	// Adds a copy of the specified portion of that matrix to this matrix
+	/**
+	 * Adds a copy of the specified portion of that matrix to this matrix
+	 * @param that the other matrix
+	 * @param rowStart
+	 * @param colStart
+	 * @param rowCount
+	 * @throws Exception
+	 */
 	public void add(Matrix that, int rowStart, int colStart, int rowCount) throws Exception {
 		if(colStart + cols() > that.cols())
 			throw new Exception("out of range");
@@ -64,7 +71,11 @@ public class Matrix {
 		}
 	}
 
-	// Resizes this matrix (and sets all attributes to be continuous)
+	/**
+	 * Resizes this matrix (and sets all attributes to be continuous)
+	 * @param rows
+	 * @param cols
+	 */
 	public void setSize(int rows, int cols) {
 		m_data = new ArrayList< double[] >();
 		for(int j = 0; j < rows; j++) {
@@ -81,7 +92,12 @@ public class Matrix {
 		}
 	}
 
-	// Loads from an ARFF file
+	/**
+	 * Loads from an ARFF file
+	 * @param filename
+	 * @throws Exception
+	 * @throws FileNotFoundException
+	 */
 	public void loadArff(String filename) throws Exception, FileNotFoundException {
 		m_data = new ArrayList<double[]>();
 		m_attr_name = new ArrayList<String>();
@@ -187,7 +203,6 @@ public class Matrix {
 			}
 		}
 	}
-
 	// Returns the number of rows in the matrix
 	int rows() { return m_data.size(); }
 
@@ -209,11 +224,17 @@ public class Matrix {
 	// Set the name of the specified attribute
 	void setAttrName(int col, String name) { m_attr_name.set(col, name); }
 
-	// Returns the name of the specified value
+	/** 
+	 * @param attr
+	 * @param val
+	 * @return the name of the specified value
+	 */
 	String attrValue(int attr, int val) { return m_enum_to_str.get(attr).get(val); }
 
-	// Returns the number of values associated with the specified attribute (or column)
-	// 0=continuous, 2=binary, 3=trinary, etc.
+	/** Returns the number of values associated with the specified attribute (or column)
+	 * @param col
+	 * @return 0=continuous, 2=binary, 3=trinary, etc.
+	 */
 	int valueCount(int col) { return m_enum_to_str.get(col).size(); }
 
 	// Shuffles the row order
@@ -226,7 +247,11 @@ public class Matrix {
 		}
 	}
 
-	// Shuffles the row order with a buddy matrix 
+	/**
+	 * Shuffles the row order with a buddy matrix 
+	 * @param rand
+	 * @param buddy
+	 */
 	void shuffle(Random rand, Matrix buddy) {
 		for (int n = rows(); n > 0; n--) {
 			int i = rand.nextInt(n);

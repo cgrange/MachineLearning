@@ -103,27 +103,27 @@ public class NeuralNet extends SupervisedLearner {
 	}
 	
 	private void initializeMomentum(Scanner reader){
-		momentum = .9;
-//		momentum = 0;
-//		System.out.println("Would you like to use Momentum: [yes/no]");
-//		boolean cantType = true;
-//		reader.nextLine();
-//		do{
-//			String input = reader.nextLine();
-//			if(input.equalsIgnoreCase("yes")){
-//				cantType = false;
-//				useMomentum = true;
-//				System.out.println("what would you like your momentum term to be?");
-//				momentum = reader.nextDouble();
-//			}
-//			else if(input.equalsIgnoreCase("no")){
-//				cantType = false;
-//				useMomentum = false;
-//			}
-//			else{
-//				System.out.println("try again");
-//			}
-//		}while(cantType);
+		//momentum = .9;
+		momentum = 0;
+		System.out.println("Would you like to use Momentum: [yes/no]");
+		boolean cantType = true;
+		//reader.nextLine();
+		do{
+			String input = reader.nextLine();
+			if(input.equalsIgnoreCase("yes")){
+				cantType = false;
+				useMomentum = true;
+				System.out.println("what would you like your momentum term to be?");
+				momentum = reader.nextDouble();
+			}
+			else if(input.equalsIgnoreCase("no")){
+				cantType = false;
+				useMomentum = false;
+			}
+			else{
+				System.out.println("try again");
+			}
+		}while(cantType);
 	}
 	
 	private void initializeHiddenLayers(Scanner reader, int numInputs){
@@ -200,8 +200,9 @@ public class NeuralNet extends SupervisedLearner {
 		//checkTesting(reader);
 		
 		if(!testing){
-			System.out.println("What would you like the Learning Rate to be: ");
-			learningRate = reader.nextDouble();
+			//System.out.println("What would you like the Learning Rate to be: ");
+			//learningRate = reader.nextDouble();
+			learningRate = .7;
 			
 			initializeMomentum(reader);
 			

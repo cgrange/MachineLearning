@@ -18,10 +18,15 @@ public abstract class SupervisedLearner {
 	// support multi-dimensional label vectors.)
 	public abstract void predict(double[] features, double[] labels) throws Exception;
 
-	// The model must be trained before you call this method. If the label is nominal,
-	// it returns the predictive accuracy. If the label is continuous, it returns
-	// the root mean squared error (RMSE). If confusion is non-NULL, and the
-	// output label is nominal, then confusion will hold stats for a confusion matrix.
+	/**
+	 * The model must be trained before you call this method. 
+	 * @param features the features to predict
+	 * @param labels the actual output for each instance
+	 * @param confusion If confusion is non-NULL, and the output label is nominal, then confusion will hold stats for a confusion matrix.
+	 * @return If the label is nominal, it returns the predictive accuracy. If the label is continuous, it returns the root mean squared error (RMSE).
+	 * @throws Exception
+	 */
+	//  
 	public double measureAccuracy(Matrix features, Matrix labels, Matrix confusion) throws Exception
 	{
 		if(features.rows() != labels.rows())
